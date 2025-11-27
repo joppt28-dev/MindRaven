@@ -1,0 +1,114 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Dark theme (slate) */
+  --color-ink-strong: #ffffff; /* headings */
+  --color-ink: #e6eef8; /* primary text */
+  --color-ink-soft: #cbd5e1; /* subtle text */
+  --color-ink-muted: #9aa7b2; /* muted text */
+  --color-ink-label: #7b8792;
+  --color-ink-subtle: #6b7280;
+  --color-surface: #0f1724; /* bg-slate-900 */
+  --color-panel: rgba(15, 23, 36, 0.5); /* bg-slate-800/50 glass */
+  --color-border: rgba(31, 41, 55, 0.5); /* slate-700 / 50 */
+  --color-primary: #7c3aed; /* violet */
+  --color-primary-strong: #3b82f6; /* blue */
+  --color-accent: #a78bfa;
+  --color-accent-alt: #60a5fa;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--color-ink);
+  background-color: var(--color-surface);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings use Space Grotesk */
+h1, h2, h3, h4, h5 {
+  font-family: 'Space Grotesk', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at 20% 20%, var(--color-surface) 0%, #0b1220 45%, #06080d 100%);
+  color: var(--color-ink);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+}
+
+input,
+textarea,
+select {
+  background: rgba(255,255,255,0.03); /* subtle dark input */
+  border: 1px solid var(--color-border);
+  color: var(--color-ink);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid rgba(34, 211, 238, 0.35);
+  border-color: var(--color-primary);
+}
+
+.glass-panel {
+  @apply bg-slate-800/50 backdrop-blur-md border border-slate-700/30 shadow-lg;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-strong) 100%);
+  color: #fff; /* violet -> blue */
+}
+
+.btn-accent {
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-alt) 100%);
+  color: var(--color-ink-strong);
+}
+
+/* Subtle cinematic noise overlay */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0; /* must be behind UI which will have higher z-index */
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch' /></filter><rect width='100%' height='100%' filter='url(%23n)' fill='%23000000' fill-opacity='0.12' /></svg>");
+  background-repeat: repeat;
+  mix-blend-mode: overlay;
+}
+
+/* Animación de entrada suave */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s ease-out forwards;
+}
+
+/* Utilidades para Flip Card 3D */
+.perspective-1000 { perspective: 1000px; }
+.transform-style-3d { transform-style: preserve-3d; }
+.backface-hidden { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.rotate-y-180 { transform: rotateY(180deg); }
