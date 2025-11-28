@@ -142,17 +142,43 @@ const LandingPage = () => {
               Deja de perder tiempo investigando manualmente. MindRaven usa IA y bases científicas para estructurar, validar y potenciar tus ideas en segundos.
             </p>
             
-            {/* BOTONES HERO */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-4 w-full max-w-md">
-              <button 
-                onClick={handleStart}
-                className="flex-1 flex items-center justify-center text-center bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-3.5 px-6 rounded-full shadow-lg shadow-cyan-900/20 transition-all hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base whitespace-nowrap"
-              >
-                Genera tu primer proyecto
-              </button>
-              <Link to="/ideas" className="flex-1 flex items-center justify-center text-center bg-white/5 border border-white/10 hover:bg-white/10 text-slate-300 hover:text-white font-semibold py-3.5 px-6 rounded-full transition-all hover:border-white/20 active:scale-[0.98] text-sm sm:text-base whitespace-nowrap">
-                Probar generador clásico
-              </Link>
+            {/* --- REEMPLAZO: TERMINAL DE IA --- */}
+            <div className="mt-8 w-full max-w-lg">
+              <div className="rounded-xl bg-[#131620] border border-white/10 p-4 font-mono text-sm shadow-2xl relative overflow-hidden">
+                
+                {/* Brillo superior */}
+                <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+
+                {/* Barra de título de la terminal */}
+                <div className="flex gap-2 mb-4 border-b border-white/5 pb-2 items-center">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
+                  <span className="ml-auto text-[10px] text-slate-600 font-sans ">MindRaven🐦</span>
+                </div>
+
+                {/* Contenido de la terminal */}
+                <div className="space-y-2 text-xs sm:text-sm">
+                  <div className="flex items-center gap-2 text-cyan-300 animate-pulse">
+                    <span>➜</span>
+                    <span className="text-cyan-200 opacity-90">Iniciando protocolo de ideación...</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-purple-300 animate-pulse">
+                    <span>➜</span>
+                    <span className="text-purple-200 opacity-90">Recopilando evidencia científica...</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-blue-300 animate-pulse">
+                    <span>➜</span>
+                    <span className="text-blue-200 opacity-90">Analizando viabilidad técnica...</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-emerald-400 animate-pulse pt-1">
+                    <span>⚡</span>
+                    <span className="font-bold">Generando plan de acción...</span>
+                    <span className="w-1 h-3 bg-emerald-400 inline-block ml-1 animate-ping"></span>
+                  </div>
+                </div>
+
+              </div>
             </div>
           </div>
 

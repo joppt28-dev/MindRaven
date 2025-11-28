@@ -61,7 +61,7 @@ export const AuthPage = () => {
     try {
       await apiRequest('/api/auth/register', null, { method: 'POST', body: JSON.stringify(regForm) });
       alert("Cuenta creada con éxito. Iniciando sesión...");
-      navigate('/projects/select', { replace: true });
+      toggleFlip('login');
     } catch (err) {
       setRegError(err.message);
     } finally {
@@ -125,6 +125,10 @@ export const AuthPage = () => {
                   Crea tu cuenta gratis
                   <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                 </button>
+                {/* BOTÓN VOLVER AL INICIO */}
+                <button onClick={() => navigate('/')} className="text-xs text-slate-600 hover:text-slate-400 transition-colors flex items-center justify-center gap-1 mx-auto py-2">
+                  ← Volver al inicio
+                </button>
               </div>
             </div>
           </div>
@@ -185,6 +189,10 @@ export const AuthPage = () => {
                 <button onClick={() => toggleFlip('login')} className="inline-flex items-center gap-2 text-sm font-semibold text-purple-400 hover:text-purple-300 transition-colors group">
                   <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                   Inicia sesión aquí
+                </button>
+                {/* BOTÓN VOLVER AL INICIO */}
+                <button onClick={() => navigate('/')} className="text-xs text-slate-600 hover:text-slate-400 transition-colors flex items-center justify-center gap-1 mx-auto py-2">
+                  ← Volver al inicio
                 </button>
               </div>
             </div>
