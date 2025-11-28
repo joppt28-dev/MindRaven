@@ -136,7 +136,7 @@ const LandingPage = () => {
               La nueva era de la innovación
             </p>
             <h1 className="text-4xl md:text-5xl font-extrabold leading-tight text-white">
-              De idea vaga a <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">Proyecto Validado</span>
+              Transforma tus ideas en <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">proyectos reales</span>
             </h1>
             <p className="text-lg text-slate-400 max-w-xl leading-relaxed">
               Deja de perder tiempo investigando manualmente. MindRaven usa IA y bases científicas para estructurar, validar y potenciar tus ideas en segundos.
