@@ -9,7 +9,17 @@ const projectRoutes = require('./routes/projectRoutes');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors());
+// ---------- CORS CONFIGURADO CORRECTAMENTE ----------
+app.use(cors({
+  origin: [
+    "https://mind-raven.vercel.app",
+    "http://localhost:5173"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+}));
+// -----------------------------------------------------
+
 app.use(express.json({ limit: '1mb' }));
 
 app.get('/api/health', (_req, res) => {
@@ -33,6 +43,5 @@ app.use((err, _req, res, _next) => {
 });
 
 app.listen(PORT, () => {
-  /* eslint-disable no-console */
   console.log(`MindRaven API ready on port ${PORT}`);
 });
