@@ -10,14 +10,18 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 // ---------- CORS CONFIGURADO CORRECTAMENTE ----------
-app.use(cors({
+const corsOptions = {
   origin: [
-    "https://mind-raven.vercel.app",
-    "http://localhost:5173"
+    "https://mind-raven.vercel.app", // frontend en Vercel
+    "http://localhost:5173"           // pruebas locales (Vite)
   ],
   methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
-}));
+};
+
+app.use(cors(corsOptions));
+
 // -----------------------------------------------------
 
 app.use(express.json({ limit: '1mb' }));
