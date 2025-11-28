@@ -4,28 +4,59 @@ import { useAuth } from '../context/AuthContext';
 // --- IMÁGENES ---
 import heroImage from '../assets/hero-ia.jpg';
 import logoImage from '../assets/logo-MR.png';
-import AppFitnessImage from '../assets/app-fitness.jpg';
-import PodcastAppImage from '../assets/podcast-app.jpg';
-import CampañaStartupImage from '../assets/campañaStartup-app.jpg';
+import AppFitnessImage from '../assets/AppFit.jpg';
+import PodcastAppImage from '../assets/AppPodcast.jpg';
+import CampañaStartupImage from '../assets/AppMarketing.jpg';
+
+// --- COMPONENTES DECORATIVOS ---
+const TrustedByStrip = () => (
+  <div className="py-10 border-y border-white/5 bg-white/[0.02]">
+    <div className="max-w-7xl mx-auto px-4 text-center">
+      <p className="text-xs font-bold tracking-[0.2em] text-slate-500 mb-6 uppercase">Potenciando la próxima generación de:</p>
+      <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-50 grayscale transition-all duration-500 hover:grayscale-0 hover:opacity-100">
+        {/* Logos simulados con texto (puedes cambiarlos por imgs de logos reales) */}
+        <span className="text-xl font-bold text-white flex items-center gap-2">⚡ TechStartups</span>
+        <span className="text-xl font-bold text-white flex items-center gap-2">🎓 Universidades</span>
+      </div>
+    </div>
+  </div>
+);
+
+const StepCard = ({ number, title, desc }) => (
+  <div className="relative flex flex-col items-center text-center space-y-4">
+    <div className="w-16 h-16 rounded-full bg-[#1A1F2E] border border-white/10 flex items-center justify-center text-2xl font-bold text-cyan-400 shadow-lg shadow-cyan-900/20 z-10">
+      {number}
+    </div>
+    <h4 className="text-lg font-bold text-white">{title}</h4>
+    <p className="text-sm text-slate-400 max-w-xs">{desc}</p>
+  </div>
+);
 
 // Componentes decorativos
 const LogoDots = () => (
   <div className="grid grid-cols-6 gap-6 justify-items-center mt-6 opacity-70">
     {[...Array(6)].map((_, idx) => (
-      <div key={idx} className="h-2 w-10 rounded-full bg-gradient-to-r from-[#2dd4bf] to-[#3b82f6] opacity-70" />
+      <div key={idx} className="h-2 w-20 rounded-full bg-gradient-to-r from-[#2dd4bf] to-[#3b82f6] opacity-70" />
     ))}
   </div>
 );
 
-const FeatureCard = ({ title, desc, icon }) => (
-  <div className="bg-[var(--color-panel)] border border-[var(--color-border)] rounded-2xl p-5 space-y-2 shadow-lg">
-    <div className="flex items-center gap-3 text-sm font-semibold text-[var(--color-ink-muted)]">
-      <span className="text-lg">{icon}</span>
-      <span>{title}</span>
+const FeatureCard = ({ title, desc, icon, delay }) => (
+  <div 
+    className="group relative bg-[#131620] border border-white/5 rounded-[2rem] p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-purple-900/20 hover:border-purple-500/30"
+    style={{ animationDelay: delay }}
+  >
+    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-[2rem]"></div>
+    <div className="relative z-10">
+      <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 group-hover:bg-purple-500/20 group-hover:text-purple-300 transition-all">
+        {icon}
+      </div>
+      <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
+      <p className="text-sm text-slate-400 leading-relaxed">{desc}</p>
     </div>
-    <p className="text-sm text-[var(--color-ink)]">{desc}</p>
   </div>
 );
+
 
 const ExampleCard = ({ title, subtitle, imageSrc }) => (
   <div className="bg-[#131620] border border-white/5 rounded-2xl p-4 space-y-3 shadow-lg overflow-hidden hover:border-purple-500/30 transition-colors group h-full">
@@ -92,6 +123,8 @@ const LandingPage = () => {
         </div>
       </nav>
 
+      
+
       {/* --- CONTENIDO CON PADDING SUPERIOR --- */}
       <div className="pt-28">
         
@@ -100,14 +133,13 @@ const LandingPage = () => {
           <div className="space-y-6">
             <p className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-widest">
               <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse"></span>
-              IA para proyectos
+              La nueva era de la innovación
             </p>
             <h1 className="text-4xl md:text-5xl font-extrabold leading-tight text-white">
-              Transforma tus ideas en <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">proyectos reales</span>
+              De idea vaga a <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">Proyecto Validado</span>
             </h1>
             <p className="text-lg text-slate-400 max-w-xl leading-relaxed">
-              MindRaven te ayuda a generar, desarrollar y organizar conceptos hasta convertirlos en planes accionables, con
-              evidencia y validación integrada.
+              Deja de perder tiempo investigando manualmente. MindRaven usa IA y bases científicas para estructurar, validar y potenciar tus ideas en segundos.
             </p>
             
             {/* BOTONES HERO */}
@@ -146,6 +178,29 @@ const LandingPage = () => {
           </div>
         </div>
 
+        {/* --- TRUSTED BY --- */}
+        <TrustedByStrip />
+
+          {/* --- CÓMO FUNCIONA --- */}
+        <div className="py-24 relative">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Tu camino al éxito en 3 pasos</h2>
+              <p className="text-slate-400">Simplificamos el proceso de investigación complejo.</p>
+            </div>
+            
+            <div className="relative grid md:grid-cols-3 gap-10">
+              {/* Línea conectora (visible en desktop) */}
+              <div className="hidden md:block absolute top-8 left-[16%] right-[16%] h-0.5 bg-gradient-to-r from-cyan-500/0 via-cyan-500/50 to-purple-500/0 border-t border-dashed border-white/20 z-0">
+              </div>
+              
+              <StepCard number="1" title="Define tu Reto" desc="Ingresa una idea, problema o tendencia que quieras explorar." />
+              <StepCard number="2" title="Análisis IA" desc="Nuestra IA escanea bases científicas y tendencias de mercado en tiempo real." />
+              <StepCard number="3" title="Plan de Acción" desc="Recibe una estructura validada lista para ejecutar o presentar." />
+            </div>
+          </div>
+        </div>
+
         <LogoDots />
 
         {/* FEATURES */}
@@ -157,15 +212,32 @@ const LandingPage = () => {
               Desde la chispa inicial hasta la validación de mercado. Todo en una sola plataforma.
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            <FeatureCard title="Estructura con IA" desc="Organiza retos en ideas claras, listas para ejecutar con asistencia inteligente." icon="🧭" />
-            <FeatureCard title="Exploración con evidencia" desc="Artículos recientes de Semantic Scholar y CrossRef priorizados automáticamente." icon="📑" />
-            <FeatureCard title="Validación y scoring" desc="Rúbrica automática de oportunidad para priorizar qué construir primero." icon="📈" />
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="grid md:grid-cols-3 gap-8">
+              <FeatureCard 
+                title="Ideación Estructurada" 
+                desc="Rompe el bloqueo creativo. Convierte una frase en un modelo de negocio potencial." 
+                icon="💡"
+                delay="0s"
+              />
+              <FeatureCard 
+                title="Evidencia Científica" 
+                desc="Conexión directa con Semantic Scholar y CrossRef. No más 'creo que', ahora es 'la data dice'." 
+                icon="📚"
+                delay="0.2s"
+              />
+              <FeatureCard 
+                title="Scoring de Viabilidad" 
+                desc="Algoritmo de puntuación que evalúa objetivamente qué tan buena es la oportunidad." 
+                icon="🎯"
+                delay="0.4s"
+              />
+            </div>
           </div>
         </div>
 
         {/* EJEMPLOS */}
-        <div className="max-w-6xl mx-auto px-4 py-10 pb-24 space-y-12">
+        <div className="max-w-6xl mx-auto px-4 py-4 pb-24 space-y-12">
           <div className="text-center space-y-3">
             <p className="text-xs uppercase tracking-[0.3em] text-purple-400 font-bold">Inspiración</p>
             <h2 className="text-3xl font-bold text-white">Proyectos que puedes crear</h2>
