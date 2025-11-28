@@ -9,9 +9,7 @@ const projectRoutes = require('./routes/projectRoutes');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors(
-  {origin: ['https://mind-raven.vercel.app', 'http://localhost:5173']}
-));
+app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 
 app.get('/api/health', (_req, res) => {
