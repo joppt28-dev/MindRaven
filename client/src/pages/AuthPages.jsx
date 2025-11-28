@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { apiRequest, API_BASE } from '../utils/apiRequest';
 
 const DEMO_EMAIL = import.meta.env.VITE_DEMO_EMAIL || 'demo@mindraven.ai';
-const DEMO_PASSWORD = import.meta.env.VITE_DEMO_PASSWORD || 'MindRaven2025';
+const DEMO_PASSWORD = import.meta.env.VITE_DEMO_PASSWORD || 'MindRaven#2025';
 
 export const AuthPage = () => {
   const navigate = useNavigate();
@@ -41,7 +41,7 @@ export const AuthPage = () => {
       if (!response.ok) throw new Error('Credenciales inválidas');
       const data = await response.json();
       login(data);
-      navigate('/', { replace: true });
+      navigate('/projects/select', { replace: true });
     } catch (err) {
       setLoginError(err.message);
     } finally {
@@ -61,7 +61,7 @@ export const AuthPage = () => {
     try {
       await apiRequest('/api/auth/register', null, { method: 'POST', body: JSON.stringify(regForm) });
       alert("Cuenta creada con éxito. Iniciando sesión...");
-      toggleFlip('login');
+      navigate('/projects/select', { replace: true });
     } catch (err) {
       setRegError(err.message);
     } finally {

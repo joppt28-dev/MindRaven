@@ -6,7 +6,7 @@ import OnboardingPage from './pages/OnboardingPage';
 import ProjectSelectorPage from './pages/ProjectSelectorPage';
 import ProjectFlowPage from './pages/ProjectFlowPage';
 import IdeaGeneratorPage from './pages/IdeaGeneratorPage';
-import ProjectsListPage from './pages/ProjectsListPage'; // <--- IMPORTANTE: Importamos la lista
+import ProjectsListPage from './pages/ProjectsListPage';
 import ProtectedRoute from './pages/ProtectedRoute';
 import DashboardLayout from './layouts/DashboardLayout';
 
@@ -15,43 +15,41 @@ function App() {
     <AuthProvider>
       <div className="relative z-10">
         <BrowserRouter>
-          {/* Capa de ruido de fondo */}
           <div className="noise-overlay" aria-hidden="true" />
-          
           <Routes>
-            {/* Layout Principal (Sidebar + Contenido) */}
+            
+            {/* --- ZONA PÚBLICA (SIN SIDEBAR) --- */}
+            
+            {/* La Landing Page ahora es independiente */}
+            <Route path="/" element={<LandingPage />} />
+            
+            {/* Login y Registro también independientes */}
+            <Route path="/login" element={<AuthPage />} />
+            <Route path="/register" element={<AuthPage />} />
+
+
+            {/* --- ZONA PRIVADA (CON SIDEBAR) --- */}
+            {/* Solo al entrar aquí aparecerá la barra lateral */}
             <Route element={<DashboardLayout />}>
               
-              {/* Rutas Públicas */}
-              <Route index element={<LandingPage />} />
-              <Route path="/login" element={<AuthPage />} />
-              <Route path="/register" element={<AuthPage />} />
-              
-              {/* --- RUTAS PROTEGIDAS --- */}
-              
-              {/* 1. Generador de Ideas */}
               <Route path="/ideas" element={
                 <ProtectedRoute>
                   <IdeaGeneratorPage />
                 </ProtectedRoute>
               } />
 
-              {/* 2. Lista de Proyectos (Historial) */}
               <Route path="/projects" element={
                 <ProtectedRoute>
                   <ProjectsListPage />
                 </ProtectedRoute>
               } />
 
-              {/* 3. Detalle del Proyecto (Flujo) */}
-              {/* A esta ruta es donde navega el botón "Profundizar" */}
               <Route path="/projects/flow" element={
                 <ProtectedRoute>
                   <ProjectFlowPage />
                 </ProtectedRoute>
               } />
 
-              {/* 4. Selector de Proyectos (Opcional) */}
               <Route path="/projects/select" element={
                 <ProtectedRoute>
                   <ProjectSelectorPage />
@@ -66,7 +64,6 @@ function App() {
 
             </Route>
             
-            {/* Ruta por defecto (Redirige al inicio si no encuentra nada) */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
