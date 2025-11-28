@@ -254,9 +254,9 @@ const LandingPage = () => {
           <div className="relative overflow-hidden bg-gradient-to-br from-[#1A1F2E] to-[#131620] border border-white/10 rounded-[2.5rem] p-10 text-center space-y-6 shadow-2xl">
             <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 blur-[80px] rounded-full pointer-events-none"></div>
             
-            <h3 className="text-3xl font-bold text-white relative z-10">¿Listo para lanzar tu próxima idea?</h3>
+            <h3 className="text-3xl font-bold text-white relative z-10">¿Listo para construir el futuro?</h3>
             <p className="text-slate-400 max-w-lg mx-auto relative z-10">
-              Supera bloqueos creativos y valida con evidencia científica en segundos. Empieza gratis hoy mismo.
+              Únete a otros exploradores que ya están validando sus ideas en tiempo récord.
             </p>
             <button 
               onClick={handleStart}
@@ -267,6 +267,12 @@ const LandingPage = () => {
             </button>
           </div>
         </div>
+
+        {/* Footer Simple */}
+        <footer className="border-t border-white/10 py-12 text-center text-slate-500 text-sm">
+          <p>© 2025 MindRaven. Innovación impulsada por Inteligencia Artificial.</p>
+        </footer>
+
 
       </div>
     </div>
