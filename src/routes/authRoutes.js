@@ -8,7 +8,7 @@ const router = express.Router();
 // Función auxiliar para generar el token
 const issueToken = (user) => {
   return jwt.sign(
-    { sub: user.id, name: user.name, email: user.email, role: user.role },
+    { sub: user.id, name: user.name, email: user.email, role: user.role, credits: user.credits },
     process.env.JWT_SECRET,
     { expiresIn: '8h' }
   );
@@ -46,7 +46,8 @@ router.post('/register', async (req, res) => {
           name: name,
           email: email,
           password: hashedPassword,
-          role: 'innovator'
+          role: 'innovator',
+          credits: 10,
         },
       ])
       .select() // Pedimos que nos devuelva el dato creado
@@ -65,6 +66,7 @@ router.post('/register', async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        credits: user.credits,
       },
     });
 
@@ -110,6 +112,7 @@ router.post('/login', async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        credits: user.credits,
       },
     });
 

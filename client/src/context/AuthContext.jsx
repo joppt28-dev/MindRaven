@@ -40,6 +40,9 @@ export const AuthProvider = ({ children }) => {
         setToken('');
         setUser(null);
       },
+      updateUser: (newUser) => {
+        setUser(newUser);
+      }
     }),
     [token, user],
   );

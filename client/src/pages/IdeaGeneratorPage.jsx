@@ -26,7 +26,7 @@ const loadingSteps = [
 ];
 
 const IdeaGeneratorPage = () => {
-  const { token, user, logout } = useAuth();
+  const { token, user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
   const [topic, setTopic] = useState('');
   const [ideas, setIdeas] = useState([]);
@@ -69,6 +69,10 @@ const IdeaGeneratorPage = () => {
         method: 'POST',
         body: JSON.stringify({ areaInteres: topic }),
       });
+
+      if (data.remainingCredits !== undefined) {
+        updateUser({ ...user, credits: data.remainingCredits });
+      }
 
       let generated = data.ideas?.length ? data.ideas : [data.idea].filter(Boolean);
 
