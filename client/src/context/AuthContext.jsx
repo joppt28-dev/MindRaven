@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { useGoogleAnalytics } from '../hooks/useGoogleAnalytics';
 
 const TOKEN_KEY = 'mindraven_token';
 const USER_KEY = 'mindraven_user';
@@ -11,6 +12,7 @@ export const AuthProvider = ({ children }) => {
     const raw = localStorage.getItem(USER_KEY);
     return raw ? JSON.parse(raw) : null;
   });
+  const { trackUserLogin, trackUserLogout } = useGoogleAnalytics();
 
   useEffect(() => {
     if (token) {
@@ -23,10 +25,12 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (user) {
       localStorage.setItem(USER_KEY, JSON.stringify(user));
+      // Track user login in Google Analytics
+      trackUserLogin(user.id, user.email);
     } else {
       localStorage.removeItem(USER_KEY);
     }
-  }, [user]);
+  }, [user, trackUserLogin]);
 
   const value = useMemo(
     () => ({
@@ -39,12 +43,14 @@ export const AuthProvider = ({ children }) => {
       logout: () => {
         setToken('');
         setUser(null);
+        // Track user logout in Google Analytics
+        trackUserLogout();
       },
       updateUser: (newUser) => {
         setUser(newUser);
       }
     }),
-    [token, user],
+    [token, user, trackUserLogout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

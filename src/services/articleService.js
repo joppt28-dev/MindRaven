@@ -131,6 +131,105 @@ const prioritizeArticles = (articles = [], keywords = []) => {
   return prioritized.length ? prioritized : articles;
 };
 
+// ====== NUEVA FUNCIÓN: VALIDAR RELEVANCIA DEL ARTÍCULO ======
+const computeRelevanceScore = (article = {}, ideaContext = {}) => {
+  const { ideaTitle = '', ideaSummary = '', innovationAngle = '', targetPersona = '' } = ideaContext;
+  
+  const articleText = `${article.title} ${article.abstract}`.toLowerCase();
+  const contextText = `${ideaTitle} ${ideaSummary} ${innovationAngle} ${targetPersona}`.toLowerCase();
+  
+  // Extraer frases clave y palabras individuales del contexto
+  const phrases = [
+    ideaTitle,
+    innovationAngle,
+    targetPersona
+  ].filter(p => p && p.length > 5);
+  
+  const contextKeywords = contextText
+    .split(/[^a-záéíóúüñ0-9]+/)
+    .filter(word => word.length > 4)
+    .map(word => word.trim());
+  
+  // Puntuación base: coincidencia de palabras clave
+  let score = 0;
+  const keywordMatches = [];
+  
+  contextKeywords.forEach(keyword => {
+    if (articleText.includes(keyword)) {
+      keywordMatches.push(keyword);
+      score += 5; // 5 puntos por cada palabra clave
+    }
+  });
+  
+  // Bonus por coincidencia de frases completas (mucho más importante)
+  let phraseMatches = 0;
+  phrases.forEach(phrase => {
+    const phraseWords = phrase.toLowerCase()
+      .split(/[^a-záéíóúüñ0-9]+/)
+      .filter(w => w.length > 3);
+    
+    if (phraseWords.length >= 2) {
+      // Si hay coincidencia de al menos 2 palabras de la frase
+      const matchedWords = phraseWords.filter(w => articleText.includes(w));
+      if (matchedWords.length >= 2) {
+        score += 20; // 20 puntos por coincidencia de frase temática
+        phraseMatches++;
+      }
+    }
+  });
+  
+  // Bonus especial por coincidencias de términos médicos/técnicos
+  const medicalTerms = ['rehabilitación', 'gamificación', 'paciente', 'terapia', 'virtual', 'IA', 'inteligencia artificial', 'personalización'];
+  const technicalMatches = medicalTerms.filter(term => articleText.includes(term)).length;
+  score += technicalMatches * 8;
+  
+  // Bonus si el artículo es reciente
+  const currentYear = new Date().getFullYear();
+  const yearDifference = currentYear - (article.year || currentYear);
+  if (yearDifference <= 3) score += 10;
+  if (yearDifference <= 5) score += 5;
+  
+  // Normalizar a 0-100
+  score = Math.min(100, Math.max(0, score));
+  
+  // Umbral: necesita al menos 2 coincidencias significativas
+  const hasSignificantMatch = keywordMatches.length >= 3 || phraseMatches >= 1 || technicalMatches >= 2;
+  
+  return {
+    score,
+    keywordMatches: keywordMatches.length,
+    totalKeywords: contextKeywords.length,
+    phraseMatches,
+    technicalMatches,
+    isRelevant: hasSignificantMatch,
+  };
+};
+
+const filterByRelevance = (articles = [], ideaContext = {}, minScore = 40) => {
+  const validated = articles.map(article => ({
+    ...article,
+    relevance: computeRelevanceScore(article, ideaContext),
+  }));
+  
+  // Logging para diagnosticar validación
+  /* eslint-disable no-console */
+  console.log(`[ArticleService] Validando ${articles.length} artículos contra idea: "${ideaContext.ideaTitle}"`);
+  validated.slice(0, 15).forEach(article => {
+    const status = article.relevance.isRelevant && article.relevance.score >= minScore ? '✓' : '✗';
+    console.log(
+      `${status} "${article.title.substring(0, 60)}..." (score: ${article.relevance.score.toFixed(0)}%, phrases: ${article.relevance.phraseMatches}, tech: ${article.relevance.technicalMatches})`
+    );
+  });
+  const filteredCount = validated.filter(a => a.relevance.isRelevant && a.relevance.score >= minScore).length;
+  console.log(`[ArticleService] ${filteredCount} de ${articles.length} artículos son relevantes (umbral: ${minScore}%)\n`);
+  /* eslint-enable no-console */
+  
+  // Filtrar por puntuación mínima y ordenar por relevancia descendente
+  return validated
+    .filter(article => article.relevance.isRelevant && article.relevance.score >= minScore)
+    .sort((a, b) => b.relevance.score - a.relevance.score);
+};
+
 const MAX_SEMANTIC_TERMS = 6;
 
 const buildSemanticQuery = (query = '') => {
@@ -239,23 +338,42 @@ const fetchCrossRef = async (query) => {
 
 const fetchArticles = async (primaryQuery, keywords = [], fallbackQuery = '', ideaContext = {}) => {
   const semanticQuery = primaryQuery?.trim() || fallbackQuery?.trim() || '';
-  const crossRefQuery = fallbackQuery?.trim() || primaryQuery?.trim() || '';
 
-  const semanticPromise = semanticQuery ? fetchSemanticScholar(semanticQuery) : Promise.resolve([]);
-  const crossPromise = crossRefQuery ? fetchCrossRef(crossRefQuery) : Promise.resolve([]);
+  if (!semanticQuery) {
+    return [];
+  }
 
-  const [semanticResult, crossResult] = await Promise.allSettled([semanticPromise, crossPromise]);
-
-  const semantic = semanticResult.status === 'fulfilled' ? semanticResult.value : [];
-  const cross = crossResult.status === 'fulfilled' ? crossResult.value : [];
-
-  const combined = postProcessArticles([...semantic, ...cross]);
-  const prioritized = prioritizeArticles(combined, keywords);
-
-  return prioritized.slice(0, 8).map((article) => ({
-    ...article,
-    supportRationale: buildSupportRationale(article, ideaContext),
-  }));
+  try {
+    // Solo usar Semantic Scholar
+    const semantic = await fetchSemanticScholar(semanticQuery);
+    
+    // Post-procesar (recientes + deduplicar)
+    const processed = postProcessArticles(semantic);
+    
+    // NUEVA VALIDACIÓN: Filtrar por relevancia con respecto a la idea
+    const relevant = filterByRelevance(processed, ideaContext, 40);
+    
+    // Si hay pocas artículos relevantes, intentar búsqueda fallback
+    let final = relevant;
+    if (final.length < 3 && fallbackQuery && fallbackQuery !== primaryQuery) {
+      const fallbackSemanticQuery = buildSemanticQuery(fallbackQuery);
+      if (fallbackSemanticQuery) {
+        const fallbackResults = await fetchSemanticScholar(fallbackQuery);
+        const fallbackProcessed = postProcessArticles(fallbackResults);
+        const fallbackRelevant = filterByRelevance(fallbackProcessed, ideaContext, 35); // Umbral más bajo para fallback
+        final = [...relevant, ...fallbackRelevant].slice(0, 8);
+      }
+    }
+    
+    // Tomar máximo 8 artículos relevantes
+    return final.slice(0, 8).map((article) => ({
+      ...article,
+      supportRationale: buildSupportRationale(article, ideaContext),
+    }));
+  } catch (error) {
+    console.warn('Error fetching articles from Semantic Scholar:', error.message);
+    return [];
+  }
 };
 
 module.exports = {

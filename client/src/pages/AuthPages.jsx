@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useGoogleAnalytics } from '../hooks/useGoogleAnalytics';
 import { apiRequest, API_BASE } from '../utils/apiRequest';
 
 const DEMO_EMAIL = import.meta.env.VITE_DEMO_EMAIL || 'demo@mindraven.ai';
@@ -10,6 +11,7 @@ export const AuthPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
+  const { trackUserLogin, trackUserLogout } = useGoogleAnalytics();
   
   const isRegisterRoute = location.pathname === '/register';
   const [isFlipped, setIsFlipped] = useState(isRegisterRoute);
@@ -42,6 +44,8 @@ export const AuthPage = () => {
       if (!response.ok) throw new Error('Credenciales inválidas');
       const data = await response.json();
       login(data);
+      // Track login in Google Analytics
+      trackUserLogin(data.user.id, data.user.email);
       navigate('/projects/select', { replace: true });
     } catch (err) {
       setLoginError(err.message);

@@ -12,8 +12,9 @@ const PORT = process.env.PORT || 4000;
 // ---------- CORS CONFIGURADO CORRECTAMENTE ----------
 const corsOptions = {
   origin: [
-    "https://mind-raven.vercel.app", // frontend en Vercel
-    "http://localhost:5173"           // pruebas locales (Vite)
+    "https://mind-raven.vercel.app", // frontend en Vercel (ajusta si es otro dominio)
+    "http://localhost:5173",           // pruebas locales (Vite)
+    "http://localhost:4000"            // pruebas locales (backend)
   ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
