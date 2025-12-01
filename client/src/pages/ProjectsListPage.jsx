@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { apiRequest } from '../utils/apiRequest';
+import { useGoogleAnalytics } from '../hooks/useGoogleAnalytics';
 
 const ProjectsListPage = () => {
   const { token } = useAuth();
   const navigate = useNavigate();
+  const { trackEvent } = useGoogleAnalytics();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, project: null, isDeleting: false });
 
   // 1. Cargar proyectos al entrar
   useEffect(() => {
@@ -33,6 +36,45 @@ const ProjectsListPage = () => {
         isNew: false 
       } 
     });
+  };
+
+  // 3. Función para abrir modal de eliminación
+  const handleOpenDeleteModal = (project, e) => {
+    e.stopPropagation(); // Evita que se abra el proyecto al hacer clic
+    setDeleteModal({ isOpen: true, project, isDeleting: false });
+  };
+
+  // 4. Función para cerrar modal
+  const handleCloseDeleteModal = () => {
+    setDeleteModal({ isOpen: false, project: null, isDeleting: false });
+  };
+
+  // 5. Función para confirmar eliminación
+  const handleConfirmDelete = async () => {
+    if (!deleteModal.project?.id) return;
+
+    setDeleteModal(prev => ({ ...prev, isDeleting: true }));
+
+    try {
+      await apiRequest(`/api/projects/${deleteModal.project.id}`, token, {
+        method: 'DELETE',
+      });
+
+      // Rastrear eliminación de proyecto
+      trackEvent('project_deleted', {
+        project_id: deleteModal.project.id,
+        idea_title: deleteModal.project.idea_data?.ideaTitle,
+      });
+
+      // Actualizar la lista de proyectos
+      setProjects(prev => prev.filter(p => p.id !== deleteModal.project.id));
+      handleCloseDeleteModal();
+    } catch (err) {
+      console.error("Error eliminando proyecto:", err);
+      alert('Error al eliminar el proyecto. Intenta de nuevo.');
+    } finally {
+      setDeleteModal(prev => ({ ...prev, isDeleting: false }));
+    }
   };
 
   return (
@@ -85,14 +127,23 @@ const ProjectsListPage = () => {
               onClick={() => handleOpenProject(proj)}
               className="group relative bg-[#131620] border border-white/10 p-7 rounded-[2rem] hover:border-purple-500/50 hover:bg-[#161a25] cursor-pointer transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-black/50 flex flex-col h-full"
             >
+              {/* Botón Eliminar (Esquina Superior Derecha) */}
+              <button
+                onClick={(e) => handleOpenDeleteModal(proj, e)}
+                className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 hover:bg-red-500/20 hover:border-red-500/40 transition opacity-0 group-hover:opacity-100 z-10"
+                title="Eliminar proyecto"
+              >
+                ✕
+              </button>
+
               {/* Etiqueta de Fecha */}
-              <div className="flex justify-between items-start mb-4">
-                <span className="text-[10px] uppercase tracking-widest text-slate-500 bg-black/40 px-3 py-1 rounded-full border border-white/5">
-                  {new Date(proj.created_at).toLocaleDateString()}
-                </span>
+              <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-lg group-hover:bg-purple-500/20 group-hover:text-purple-300 transition-colors">
                   🚀
                 </div>
+                <span className="text-[10px] uppercase tracking-widest text-slate-500 bg-black/40 px-3 py-1 rounded-full border border-white/5">
+                  {new Date(proj.created_at).toLocaleDateString()}
+                </span>
               </div>
 
               {/* Contenido */}
@@ -116,6 +167,48 @@ const ProjectsListPage = () => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Modal de Confirmación de Eliminación */}
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={handleCloseDeleteModal}
+          ></div>
+          <div className="relative z-10 w-full max-w-md rounded-3xl border border-red-500/30 bg-[#0b0f19] shadow-2xl p-8 space-y-6">
+            <div>
+              <h3 className="text-2xl font-bold text-white mb-2">¿Eliminar proyecto?</h3>
+              <p className="text-slate-400">
+                Se eliminará permanentemente el proyecto <span className="font-semibold text-white">"{deleteModal.project?.idea_data?.ideaTitle}"</span>. Esta acción no se puede deshacer.
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleCloseDeleteModal}
+                disabled={deleteModal.isDeleting}
+                className="flex-1 px-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white font-semibold hover:bg-white/10 transition disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deleteModal.isDeleting}
+                className="flex-1 px-4 py-3 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 font-semibold hover:bg-red-500/20 hover:border-red-500/50 transition disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deleteModal.isDeleting ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin"></span>
+                    Eliminando...
+                  </>
+                ) : (
+                  <>🗑️ Eliminar</>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

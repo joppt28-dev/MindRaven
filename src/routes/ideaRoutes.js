@@ -23,6 +23,10 @@ router.post('/', authenticate, async (req, res, next) => {
       ? [ideaResult]
       : [];
 
+    if (!ideasArray || ideasArray.length === 0) {
+      throw new Error('No se generaron ideas válidas. Intenta de nuevo con otro tema.');
+    }
+
     const normalizedIdeas = ideasArray.map((idea) => ({
       ideaTitle: idea.ideaTitle || 'Concepto MindRaven',
       ideaSummary:
@@ -74,7 +78,7 @@ router.post('/', authenticate, async (req, res, next) => {
       ideaQuery || normalizedIdea.ideaTitle || normalizedIdea.innovationAngle,
       keywordTokens,
       ideaQuery,
-      normalizedIdea,
+      normalizedIdea, // Pasar contexto completo de la idea
     );
     const scoring = await scoreIdea(normalizedIdea, articles);
 

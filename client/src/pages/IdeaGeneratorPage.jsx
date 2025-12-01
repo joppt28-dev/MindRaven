@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { apiRequest } from '../utils/apiRequest';
+import { useGoogleAnalytics } from '../hooks/useGoogleAnalytics';
 
 const sampleAreas = [
   'Emprendimiento social en Latinoamérica',
@@ -12,22 +13,23 @@ const sampleAreas = [
 
 const loadingSteps = [
   {
-    title: 'Ideando con MindRaven',
-    description: 'Sintetizando señales de innovación y retos regionales para proponer un concepto diferencial.',
+    title: 'Analizando ideas perfectas',
+    description: 'Buscando oportunidades que el público realmente necesita y desea.',
   },
   {
-    title: 'Analizando bases científicas',
-    description: 'Consultando Semantic Scholar y CrossRef para encontrar artículos que respalden la hipótesis.',
+    title: 'Validando con evidencia',
+    description: 'Encontrando respaldo científico para confirmar el potencial de la idea.',
   },
   {
-    title: 'Evaluando la oportunidad',
-    description: 'Aplicando la rúbrica de popularidad, prioridad e inevitabilidad para puntuar la idea.',
+    title: 'Evaluando el impacto',
+    description: 'Calculando viabilidad, mercado y factores de éxito de tu concepto.',
   },
 ];
 
 const IdeaGeneratorPage = () => {
   const { token, user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
+  const { trackEvent } = useGoogleAnalytics();
   const [topic, setTopic] = useState('');
   const [ideas, setIdeas] = useState([]);
   const [articles, setArticles] = useState([]); // Nota: no se usa en renderizado, pero se mantiene por estructura
@@ -70,6 +72,12 @@ const IdeaGeneratorPage = () => {
         body: JSON.stringify({ areaInteres: topic }),
       });
 
+      // Rastrear generación de ideas
+      trackEvent('idea_generated', {
+        topic: topic,
+        ideas_count: data.ideas?.length || 0,
+      });
+
       if (data.remainingCredits !== undefined) {
         updateUser({ ...user, credits: data.remainingCredits });
       }
@@ -84,41 +92,15 @@ const IdeaGeneratorPage = () => {
         seen.add(key);
         return true;
       });
-
-      // Si llegan menos de 3, crea variaciones diferenciadas.
-      if (generated.length < 3 && generated[0]) {
-        const base = generated[0];
-        const variantSeeds = [
-          {
-            title: `${base.ideaTitle} · Enfoque B2B`,
-            summary: `${base.ideaSummary} Priorizando adopción en empresas y canales comerciales.`,
-          },
-          {
-            title: `${base.ideaTitle} · Enfoque consumidor`,
-            summary: `${base.ideaSummary} Afinado para experiencia directa al usuario final y retención.`,
-          },
-          {
-            title: `${base.ideaTitle} · Regulación/Impacto`,
-            summary: `${base.ideaSummary} Incorporando cumplimiento normativo y métricas de impacto público.`,
-          },
-        ];
-
-        for (const seed of variantSeeds) {
-          const key = seed.title.toLowerCase();
-          if (generated.length >= 3 || seen.has(key)) continue;
-          generated.push({
-            ...base,
-            ideaTitle: seed.title,
-            ideaSummary: seed.summary,
-          });
-          seen.add(key);
-        }
-      }
-
-      setIdeas(generated.slice(0, 3));
+      const finalIdeas = generated.slice(0, 3);
+      setIdeas(finalIdeas);
       setArticles([]); 
       setScores(null);
-      setToast('Ideas generadas.');
+      setToast(
+        finalIdeas.length < 3
+          ? 'El modelo devolvio menos de 3 ideas unicas; intenta regenerar para obtener mas variaciones.'
+          : 'Ideas generadas.',
+      );
     } catch (err) {
       setError(err.message);
     } finally {
@@ -129,6 +111,12 @@ const IdeaGeneratorPage = () => {
   // --- NUEVA FUNCIÓN: GUARDAR Y NAVEGAR ---
   const handleSaveAndContinue = async (selectedIdea) => {
     try {
+      // Rastrear guardado de proyecto
+      trackEvent('project_created', {
+        idea_title: selectedIdea.ideaTitle,
+        topic: topic,
+      });
+
       // 1. Guardar en Supabase (POST /api/projects)
       const savedProject = await apiRequest('/api/projects', token, {
         method: 'POST',
@@ -225,7 +213,7 @@ const IdeaGeneratorPage = () => {
             <p className="text-xs uppercase tracking-[0.4em] text-[var(--color-ink-subtle)]">Procesando</p>
             <h4 className="text-2xl font-bold text-[var(--color-ink-strong)]">{loadingSteps[progressIndex].title}</h4>
             <p className="text-sm text-[var(--color-ink-muted)]">{loadingSteps[progressIndex].description}</p>
-            <p className="text-xs text-[var(--color-ink-subtle)]">Conectando con Gemini · Revisando artículos · Aplicando rúbrica</p>
+            <p className="text-xs text-[var(--color-ink-subtle)]">Analizando · Validando · Procesando...</p>
           </div>
         )}
 
@@ -279,6 +267,31 @@ const IdeaGeneratorPage = () => {
                 </div>
               ))}
             </div>
+
+            {/* Señal de Premium - Más Ideas */}
+            {ideas.length >= 3 && (
+              <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-purple-900/20 to-blue-900/20 border border-purple-500/30 p-8 shadow-xl">
+                <div className="absolute top-0 right-0 w-48 h-48 bg-purple-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+                
+                <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">⚡</span>
+                      <h4 className="text-xl font-bold text-white">¿Quieres explorar más ideas?</h4>
+                    </div>
+                    <p className="text-slate-300 text-sm">
+                      Acceso ilimitado a ideas generadas, variaciones personalizadas y análisis profundo con <span className="font-semibold text-purple-300">Premium</span>.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="shrink-0 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold hover:shadow-lg hover:shadow-purple-500/30 transition-all hover:scale-105"
+                  >
+                    Upgrade Premium
+                  </button>
+                </div>
+              </div>
+            )}
           </section>
         )}
       </div>

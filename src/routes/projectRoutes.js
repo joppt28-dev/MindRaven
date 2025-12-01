@@ -96,6 +96,43 @@ router.get('/:id', authenticate, async (req, res) => {
   }
 });
 
+// ==================================================================
+// 4. ELIMINAR UN PROYECTO (DELETE /api/projects/:id)
+// ==================================================================
+router.delete('/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.sub;
+
+    // Primero verificar que el proyecto pertenece al usuario
+    const { data: project, error: fetchError } = await supabase
+      .from('projects')
+      .select('id')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .single();
+
+    if (fetchError || !project) {
+      return res.status(404).json({ message: 'Proyecto no encontrado o no autorizado.' });
+    }
+
+    // Proceder a eliminar
+    const { error: deleteError } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId);
+
+    if (deleteError) throw deleteError;
+
+    return res.json({ message: 'Proyecto eliminado correctamente.', id });
+
+  } catch (error) {
+    console.error('Error eliminando proyecto:', error);
+    return res.status(500).json({ message: 'Error al eliminar proyecto.' });
+  }
+});
+
 
 // ==================================================================
 // LÓGICA DE NEGOCIO (BOOTSTRAP / GENERACIÓN)
@@ -178,6 +215,129 @@ const buildProjectPrepare = (projectType, idea) => {
   };
 };
 
+const buildValidationRecommendations = (projectType = 'innovation', idea = {}) => {
+  const persona = idea.targetPersona || 'usuarios objetivo';
+  const personaLower = persona.toLowerCase();
+  const opportunity = idea.innovationAngle || idea.ideaTitle || 'la propuesta';
+
+  const sharedMethods = [
+    `Encuestas rapidas a ${personaLower} para medir interes y disposicion a pagar.`,
+    'Entrevistas cualitativas de 15 minutos para profundizar en los dolores principales.',
+  ];
+
+  const innovationSpecific = [
+    'Prototipo navegable en Figma/Slides para validar narrativa de valor.',
+    'Smoke test o landing page con CTA para medir interes real.',
+  ];
+
+  const researchSpecific = [
+    'Revision sistematica reducida para identificar marcos comparables.',
+    `Focus group con representantes de ${personaLower} para validar la hipotesis.`,
+  ];
+
+  const methods =
+    projectType === 'research'
+      ? [...sharedMethods, ...researchSpecific]
+      : [...sharedMethods, ...innovationSpecific];
+
+  const successMetrics =
+    projectType === 'research'
+      ? [
+          'Numero de referencias academicas alineadas con la hipotesis.',
+          'Participantes que confirman la pertinencia del problema (>70%).',
+          'Tiempo promedio para obtener consentimiento o participacion.',
+        ]
+      : [
+          'Usuarios que completan el flujo del prototipo sin friccion (>60%).',
+          'Intentos de registro o leads capturados en la landing.',
+          'Validacion de rango de precio o presupuesto estimado.',
+        ];
+
+  const solutionSummary = idea.ideaSummary || `Resolver las fricciones que enfrentan ${personaLower}.`;
+
+  const prototypeModules =
+    projectType === 'research'
+      ? [
+          `Panel de hipotesis para priorizar que supuestos de ${opportunity.toLowerCase()} validar primero.`,
+          `Repositorio colaborativo para literatura y entrevistas de ${personaLower}, con etiquetas por impacto.`,
+          'Dashboard de progreso que compara senal academica vs senal de campo en tiempo real.',
+        ]
+      : [
+          `Onboarding guiado que ayuda a ${personaLower} a describir su contexto en menos de 2 minutos.`,
+          `Modulo principal donde se entrega ${opportunity.toLowerCase()} con recomendaciones accionables.`,
+          'Centro de metricas que contrasta el antes/despues e invita a reservar presupuesto.',
+        ];
+
+  const highFidelityPrototype = {
+    vision: `Construye un prototipo navegable que muestre el flujo completo de ${opportunity.toLowerCase()} y deje claro que dato o accion se espera en cada pantalla para ${personaLower}.`,
+    coreModules: prototypeModules,
+    heroMoments: [
+      `Momento aha: los ${personaLower} visualizan resultados o insights accionables derivados de ${opportunity.toLowerCase()}.`,
+      'Momento de compromiso: se introduce la ficcion de pago y se observa su reaccion sin hablar de precio.',
+      'Momento de retorno: muestra como compartir metricas con un tercero clave (jefe, cliente, comite).',
+    ],
+    summary: solutionSummary,
+  };
+
+  const interviewScript = {
+    introduction:
+      'Aclara que buscas evidencia real (experiencias pasadas) y que la mitad de las preguntas se adaptaran mientras aprendes del usuario.',
+    adaptationNote:
+      'Escucha activa y silencio intencional; improvisa cuando aparezcan ejemplos concretos o extremos.',
+    sections: [
+      {
+        title: 'Experiencia reciente y contexto',
+        focus: 'Empieza por la ultima vez que vivieron el problema; deja que describan origen y consecuencia.',
+        prompts: [
+          'Cuentame la ultima vez que enfrentaste este problema. Que lo detono y quien mas se vio involucrado?',
+          'Que te impidio hacer tu problema y por que dolio tanto en esa ocasion?',
+        ],
+      },
+      {
+        title: 'Acciones y recursos usados',
+        focus: 'Busca senales de compromiso: tiempo, dinero o aliados ya invertidos.',
+        prompts: [
+          'Que herramientas, personas o presupuestos has usado para resolverlo? Cuanto te costo?',
+          'Como evaluaste si esas alternativas funcionaban y que falto?',
+        ],
+      },
+      {
+        title: 'Gravedad y priorizacion',
+        focus: 'Identifica la parte mas critica del problema y mide si estarian listos para pagarla ahora mismo.',
+        prompts: [
+          'De todo lo que mencionaste, que parte es la mas grave y por cual pagarias hoy mismo?',
+          'Que hace que esa parte sea critica en tu contexto o nicho especifico?',
+        ],
+      },
+      {
+        title: 'Reaccion ante el MVP',
+        focus: 'Introduce la ficcion de pago sin precio para detectar compromiso.',
+        prompts: [
+          `Si te habilito hoy el modulo de ${opportunity.toLowerCase()}, que tendrias que ver para transferirme dinero al terminar la llamada?`,
+          'Quien tendria que aprobar esa compra y que objeciones anticipas?',
+        ],
+      },
+      {
+        title: 'Expertos y siguientes pasos',
+        focus: 'Detecta referentes dentro del nicho y mantente aprendiendo.',
+        prompts: [
+          `Quien mas dentro de ${personaLower} ha intentado resolverlo y deberia entrevistar?`,
+          'Que indicador confirmaria que vale la pena continuar hablando conmigo?',
+        ],
+      },
+    ],
+    closing:
+      'Agradece y pregunta si estan listos para pagar por el entregable critico; registra objeciones textuales antes de pactar seguimiento.',
+  };
+
+  return {
+    methods,
+    highFidelityPrototype,
+    interviewScript,
+    successMetrics,
+  };
+};
+
 // Mantenemos tu ruta /bootstrap tal cual, es útil para iniciar flujos sin guardar
 router.post('/bootstrap', authenticate, async (req, res, next) => {
   try {
@@ -229,6 +389,7 @@ router.post('/bootstrap', authenticate, async (req, res, next) => {
 
     const scoring = await scoreIdea(idea, articles);
     const prepare = buildProjectPrepare(projectType, idea);
+    const validation = buildValidationRecommendations(projectType, idea);
 
     return res.json({
       profile: { userType, goal, projectType, topic: topicToUse },
@@ -242,6 +403,7 @@ router.post('/bootstrap', authenticate, async (req, res, next) => {
         selectedEvidence: [],
       },
       prepare,
+      validation,
       confirm: scoring,
       generatedAt: new Date().toISOString(),
     });
