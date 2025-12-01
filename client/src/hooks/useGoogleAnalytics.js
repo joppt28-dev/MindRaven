@@ -15,6 +15,7 @@ export const useGoogleAnalytics = () => {
     }
   };
 
+<<<<<<< HEAD
   // Rastrear login de usuario
   const trackUserLogin = (userId, userEmail) => {
     if (typeof window !== 'undefined' && window.gtag) {
@@ -40,4 +41,7 @@ export const useGoogleAnalytics = () => {
   };
 
   return { trackEvent, trackPageView, trackUserLogin, trackUserLogout };
+=======
+  return { trackEvent, trackPageView };
+>>>>>>> 368d7fcc25a71a5b04bd4320a2aaabd170049c0f
 };
