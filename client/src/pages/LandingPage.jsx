@@ -7,6 +7,10 @@ import logoImage from '../assets/logo-MR.png';
 import AppFitnessImage from '../assets/AppFit.jpg';
 import PodcastAppImage from '../assets/AppPodcast.jpg';
 import CampañaStartupImage from '../assets/AppMarketing.jpg';
+import logoMR from '../assets/LOGO_MR.jpg';
+
+// --- VIDEOS ---
+import videoRaven from '../assets/videoMRcomprimido.mp4';
 
 // --- COMPONENTES DECORATIVOS ---
 const TrustedByStrip = () => (
@@ -199,6 +203,38 @@ const LandingPage = () => {
                    <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
                    <span className="text-xs font-semibold text-white tracking-wide">Análisis en tiempo real</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <LogoDots />
+
+        {/* --- SECCIÓN DE VIDEO DEMO --- */}
+        <div className="py-20 relative">
+          <div className="max-w-5xl mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-white">Míralo en acción</h2>
+              <p className="text-slate-400 mt-2">Descubre cómo MindRaven estructura tu idea en menos de 1 minuto.</p>
+            </div>
+
+            {/* Marco del Video Estilo Laptop/Pantalla */}
+            <div className="relative rounded-2xl border border-white/10 bg-[#131620] p-2 shadow-2xl shadow-purple-900/20 overflow-hidden group">
+              {/* Luz de fondo */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
+              
+              <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
+                <video
+                  controls // Permite al usuario pausar/reproducir
+                  className="w-full h-full object-cover"
+                  poster={logoMR} // Portada del video
+                >
+                  <source src={videoRaven} type="video/mp4" />
+                  Tu navegador no soporta el tag de video.
+                </video>
+
+                {/* (Opcional) Overlay de Play si no usas controles nativos, 
+                    pero 'controls' es lo más fácil para empezar */}
               </div>
             </div>
           </div>
